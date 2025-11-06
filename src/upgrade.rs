@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use semver::Version;
 
 use crate::config::Config;

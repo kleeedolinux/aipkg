@@ -1,5 +1,4 @@
 use anyhow::{Context, Result};
-use std::time::SystemTime;
 use tokio::fs;
 use serde::{Deserialize, Serialize};
 use sha2::{Sha256, Digest};
@@ -113,17 +112,5 @@ async fn load_all_sources(config: &Config) -> Result<Vec<String>> {
     sources.dedup();
     
     Ok(sources)
-}
-
-pub async fn get_cache_timestamp(config: &Config) -> Result<Option<SystemTime>> {
-    if !config.unified_index_cache.exists() {
-        return Ok(None);
-    }
-    
-    let metadata = fs::metadata(&config.unified_index_cache).await?;
-    match metadata.modified() {
-        Ok(time) => Ok(Some(time)),
-        Err(e) => Err(anyhow::anyhow!("Failed to get modification time: {}", e)),
-    }
 }
 

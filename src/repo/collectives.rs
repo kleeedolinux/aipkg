@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CollectivesYaml {
@@ -54,12 +53,6 @@ impl CollectivesYaml {
         let initial_len = self.collectives.len();
         self.collectives.retain(|c| c.name != name);
         self.collectives.len() < initial_len
-    }
-
-    pub fn get_collective_sources(&self, name: &str) -> Option<&Vec<String>> {
-        self.collectives.iter()
-            .find(|c| c.name == name)
-            .map(|c| &c.sources)
     }
 
     pub fn get_all_sources(&self) -> Vec<String> {

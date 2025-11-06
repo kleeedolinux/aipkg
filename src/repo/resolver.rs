@@ -1,8 +1,8 @@
-use anyhow::{Context, Result};
-use std::collections::{HashMap, HashSet};
+use anyhow::Result;
+use std::collections::HashSet;
 use url::Url;
 
-use crate::repo::appimage_yaml::{AppImageEntry, UnifiedIndex};
+use crate::repo::appimage_yaml::UnifiedIndex;
 use crate::repo::index_yaml::{IndexYaml, SourceType};
 use crate::repo::fetcher::Fetcher;
 use crate::repo::cache::calculate_yaml_hash;
@@ -18,21 +18,6 @@ impl Resolver {
             fetcher: Fetcher::new()?,
             visited: HashSet::new(),
         })
-    }
-
-    pub async fn resolve_sources(&mut self, sources: Vec<String>) -> Result<UnifiedIndex> {
-        let mut index = UnifiedIndex::new();
-        self.visited.clear();
-        
-        // Process sources sequentially to maintain visited set correctly
-        for source_url in sources {
-            let entries = self.resolve_source_flattened(&source_url).await?;
-            for entry in entries {
-                index.add_entry(entry.entry, entry.source_url);
-            }
-        }
-        
-        Ok(index)
     }
 
     pub async fn resolve_sources_incremental(
@@ -59,21 +44,6 @@ impl Resolver {
         }
         
         Ok(index)
-    }
-
-    async fn resolve_source_flattened(&mut self, url: &str) -> Result<Vec<crate::repo::appimage_yaml::AppImageEntryWithSource>> {
-        let normalized = self.normalize_url(url)?;
-        
-        if self.visited.contains(&normalized) {
-            return Ok(Vec::new());
-        }
-        
-        self.visited.insert(normalized.clone());
-        
-        let content = self.fetcher.fetch_yaml(&normalized).await?;
-        let entries = self.parse_yaml_content(&content, &normalized).await?;
-        
-        Ok(entries)
     }
 
     async fn resolve_source_incremental(

@@ -1,8 +1,5 @@
 use anyhow::{Context, Result};
 use tokio::fs;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::path::PathBuf;
 
 use crate::config::Config;
 use crate::install::load_database;

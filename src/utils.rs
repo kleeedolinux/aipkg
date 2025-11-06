@@ -1,6 +1,5 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 use std::path::Path;
-use std::process::Command;
 use tokio::fs;
 
 #[derive(Debug, Clone)]
@@ -8,7 +7,6 @@ pub struct AppImageMetadata {
     pub name: String,
     pub version: Option<String>,
     pub description: Option<String>,
-    pub exec: Option<String>,
     pub icon: Option<String>,
     pub categories: Vec<String>,
     pub size: u64,
@@ -37,7 +35,6 @@ pub async fn extract_metadata(appimage_path: &str) -> Result<AppImageMetadata> {
         name: desktop_entry.name.unwrap_or(name),
         version: desktop_entry.version,
         description: desktop_entry.comment,
-        exec: desktop_entry.exec,
         icon: desktop_entry.icon,
         categories: desktop_entry.categories.unwrap_or_default(),
         size,
@@ -49,7 +46,6 @@ struct DesktopEntry {
     name: Option<String>,
     version: Option<String>,
     comment: Option<String>,
-    exec: Option<String>,
     icon: Option<String>,
     categories: Option<Vec<String>>,
 }
@@ -129,7 +125,6 @@ fn parse_desktop_entry(content: &str) -> Result<DesktopEntry> {
                 "Name" => entry.name = Some(value.to_string()),
                 "Version" => entry.version = Some(value.to_string()),
                 "Comment" => entry.comment = Some(value.to_string()),
-                "Exec" => entry.exec = Some(value.to_string()),
                 "Icon" => entry.icon = Some(value.to_string()),
                 "Categories" => {
                     entry.categories = Some(
@@ -145,9 +140,4 @@ fn parse_desktop_entry(content: &str) -> Result<DesktopEntry> {
     }
     
     Ok(entry)
-}
-
-pub async fn get_appimage_size(path: &str) -> Result<u64> {
-    let metadata = fs::metadata(path).await?;
-    Ok(metadata.len())
 }
