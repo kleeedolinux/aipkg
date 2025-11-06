@@ -1,0 +1,33 @@
+[package]
+name = "aipkg"
+version = "0.1.0"
+edition = "2021"
+authors = ["kleeedolinux", "aipkg contributors"]
+description = "A full-featured, community-driven package manager for AppImages"
+license = "MIT"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json", "stream"] }
+futures-util = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+sha2 = "0.10"
+tokio = { version = "1.35", features = ["full"] }
+anyhow = "1.0"
+indicatif = "0.17"
+fuzzy-matcher = "0.3"
+semver = "1.0"
+async-trait = "0.1"
+dirs = "5.0"
+hex = "0.4"
+url = "2.5"
+toml = "0.8"
+chrono = "0.4"
+regex = "1.10"
+futures = "0.3"
+
+[dev-dependencies]
+tempfile = "3.8"
+mockito = "1.2"
+

@@ -1,0 +1,118 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g., 0.1.0)'
+        required: true
+      codename:
+        description: 'Codename (e.g., Aurora)'
+        required: true
+
+jobs:
+  build:
+    name: Build Linux Binary
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Extract version and codename
+        id: version_info
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+            CODENAME="${{ github.event.inputs.codename }}"
+          else
+            # Extract version from tag (e.g., v0.1.0 -> 0.1.0)
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            # Generate codename based on version
+            # You can customize this mapping
+            case "$VERSION" in
+              0.1.*) CODENAME="Aurora" ;;
+              0.2.*) CODENAME="Borealis" ;;
+              0.3.*) CODENAME="Cascade" ;;
+              1.0.*) CODENAME="Dawn" ;;
+              *) CODENAME="Release" ;;
+            esac
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "codename=$CODENAME" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "release_name=aipkg $VERSION ($CODENAME)" >> $GITHUB_OUTPUT
+
+      - name: Build release binary
+        run: |
+          cargo build --release --locked
+
+      - name: Strip binary
+        run: |
+          strip target/release/aipkg || true
+
+      - name: Create release archive
+        run: |
+          mkdir -p release
+          cp target/release/aipkg release/aipkg
+          tar -czf aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz -C release aipkg
+          sha256sum aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz > aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz.sha256
+
+      - name: Calculate checksum
+        id: checksum
+        run: |
+          CHECKSUM=$(sha256sum aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz | cut -d' ' -f1)
+          echo "checksum=$CHECKSUM" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version_info.outputs.tag }}
+          name: ${{ steps.version_info.outputs.release_name }}
+          body: |
+            ## aipkg ${{ steps.version_info.outputs.version }} (${{ steps.version_info.outputs.codename }})
+            
+            ### Installation
+            
+            ```bash
+            # Download and extract
+            wget https://github.com/${{ github.repository }}/releases/download/${{ steps.version_info.outputs.tag }}/aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz
+            tar -xzf aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz
+            
+            # Install to system
+            sudo mv aipkg /usr/local/bin/
+            ```
+            
+            ### Checksums
+            
+            ```
+            SHA256: ${{ steps.checksum.outputs.checksum }}
+            ```
+          files: |
+            aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz
+            aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz.sha256
+          draft: false
+          prerelease: ${{ contains(steps.version_info.outputs.version, '-') || contains(steps.version_info.outputs.version, 'alpha') || contains(steps.version_info.outputs.version, 'beta') || contains(steps.version_info.outputs.version, 'rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
