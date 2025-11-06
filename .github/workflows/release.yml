@@ -48,7 +48,8 @@ jobs:
             CODENAME="${{ github.event.inputs.codename }}"
           else
             # Extract version from tag (e.g., v0.1.0 -> 0.1.0)
-            VERSION="${GITHUB_REF#refs/tags/v}"
+            TAG_NAME="${{ github.ref_name }}"
+            VERSION="${TAG_NAME#v}"
             # Generate codename based on version
             # You can customize this mapping
             case "$VERSION" in
@@ -89,6 +90,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ steps.version_info.outputs.tag }}
           name: ${{ steps.version_info.outputs.release_name }}
           body: |
@@ -115,6 +117,4 @@ jobs:
             aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz.sha256
           draft: false
           prerelease: ${{ contains(steps.version_info.outputs.version, '-') || contains(steps.version_info.outputs.version, 'alpha') || contains(steps.version_info.outputs.version, 'beta') || contains(steps.version_info.outputs.version, 'rc') }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
