@@ -4,6 +4,16 @@ A full-featured, community-driven package manager for AppImages built in Rust.
 
 > **Warning: aipkg is currently in an unstable/testing version. The API and behavior may change without notice. You're welcome to contribute, test, report bugs, and request features. Your feedback helps shape the future of aipkg!**
 
+## Quick Installation
+
+Install aipkg on any Linux distribution with a single command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/kleeedolinux/aipkg/refs/heads/main/scripts/install.sh | sh
+```
+
+This will automatically download and install the latest stable release of aipkg to `/usr/local/bin/aipkg`.
+
 ## Vision
 
 aipkg was created to solve a fundamental problem with AppImages: while they're portable and self-contained, there was no unified way to discover, install, and manage them. We envisioned a decentralized, community-driven ecosystem where anyone can host their own repository, and users can easily discover and install packages from multiple sources.
