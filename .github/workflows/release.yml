@@ -90,7 +90,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           tag_name: ${{ steps.version_info.outputs.tag }}
           name: ${{ steps.version_info.outputs.release_name }}
           body: |
