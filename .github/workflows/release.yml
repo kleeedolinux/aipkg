@@ -90,7 +90,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ steps.version_info.outputs.tag }}
           name: ${{ steps.version_info.outputs.release_name }}
           body: |
@@ -117,4 +117,3 @@ jobs:
             aipkg-${{ steps.version_info.outputs.version }}-x86_64-linux.tar.gz.sha256
           draft: false
           prerelease: ${{ contains(steps.version_info.outputs.version, '-') || contains(steps.version_info.outputs.version, 'alpha') || contains(steps.version_info.outputs.version, 'beta') || contains(steps.version_info.outputs.version, 'rc') }}
-
